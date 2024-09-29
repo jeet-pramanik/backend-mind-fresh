@@ -1,40 +1,33 @@
 import User from "../models/User.js";
 
 // Login Controllers here
+// In userControllers.js
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  try {
-    // Find the user by email
-    const user = await User.findOne({ email });
-
-    // Check if user exists and if password matches (you should hash passwords in production)
-    if (user && user.password === password) {
-      res.status(200).json({ message: "Login successful", user });
-    } else {
-      res.status(401).json({ message: "Invalid email or password" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+  // Find user by email
+  const user = await User.findOne({ email });
+  if (!user || user.password !== password) {
+    // Add proper hashing in production
+    return res.status(401).json({ message: "Invalid credentials" });
   }
+
+  res.status(200).json({ message: "Login successful", user });
 };
 
 // Register Controllers here
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
-
-  try {
-    const user = new User({
-      name,
-      email,
-      password,
-    });
-
-    await user.save();
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to create user" });
+  // Check if user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({ message: "User already exists" });
   }
+
+  // Create a new user
+  const newUser = new User({ name, email, password });
+  await newUser.save();
+  res.status(201).json({ message: "User registered successfully" });
 };
 
 // Get all users
