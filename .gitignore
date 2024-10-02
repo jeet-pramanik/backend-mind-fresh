@@ -88,3 +88,4 @@ public/
 
 # MacOS files
 .DS_Store
+.vercel
